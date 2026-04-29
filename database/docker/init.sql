@@ -1,6 +1,6 @@
 -- สร้างตาราง users
 CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+   id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   email VARCHAR(255) UNIQUE,
   password VARCHAR(255),
@@ -9,7 +9,7 @@ CREATE TABLE users (
 
 -- สร้างตาราง admins
 CREATE TABLE admins (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+   id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   email VARCHAR(255) UNIQUE,
   password VARCHAR(255),
@@ -18,7 +18,7 @@ CREATE TABLE admins (
 
 
 CREATE TABLE courses (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+   id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   category VARCHAR(100),
   price INT,
@@ -33,9 +33,6 @@ CREATE TABLE courses (
 -- เพิ่มข้อมูล courses
 INSERT INTO courses (name, category, price, description, platform, link, startDate, time)
 VALUES
-('Web Dev Online', 'Coding', 1200, 'เรียนผ่าน Zoom', 'Zoom', 'https://zoom.us/1', '2026-05-10', '18:00-20:00'),
-('UX Advanced', 'Design', 2500, 'UX ขั้นสูง', 'Meet', 'https://meet.google.com/1', '2026-05-15', '19:00-21:00'),
-('AI Business', 'Business', 5000, 'AI สำหรับธุรกิจ', 'Website', 'https://example.com', '2026-05-20', '20:00-22:00');
 ('Fullstack JavaScript', 'Coding', 3000, 'เรียน Node.js + React ครบ', 'Zoom', 'https://zoom.us/2', '2026-06-01', '18:00-21:00'),
 ('Graphic Design Basics', 'Design', 1500, 'พื้นฐาน Photoshop และ Illustrator', 'Meet', 'https://meet.google.com/2', '2026-06-05', '19:00-21:00'),
 ('Digital Marketing', 'Business', 2800, 'การตลาดออนไลน์ครบทุกช่องทาง', 'Website', 'https://example.com/marketing', '2026-06-10', '20:00-22:00'),
@@ -43,10 +40,9 @@ VALUES
 ('UI Design Masterclass', 'Design', 4000, 'ออกแบบ UI ระดับมืออาชีพ', 'Meet', 'https://meet.google.com/3', '2026-06-20', '19:00-22:00');
 
 -- USERS
-INSERT INTO users (name, email, password, role) VALUES
-('User One', 'user1@example.com', '123456', 'user'),
-('User Two', 'user2@example.com', '123456', 'user'),
-('Admin User', 'admin_user@example.com', '123456', 'admin');
+INSERT INTO users (name, email, password) VALUES
+('User One', 'user1@example.com', '123456'),
+('User Two', 'user2@example.com', '123456');
 
 -- ADMINS
 INSERT INTO admins (name, email, password) VALUES

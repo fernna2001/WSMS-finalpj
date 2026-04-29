@@ -2,159 +2,134 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Payment = () => {
-  const location = useLocation();
+  const { state } = useLocation();
   const navigate = useNavigate();
-  
-  // รับข้อมูล user และ package จากหน้าสมัครสมาชิก
-  const user = location.state?.user || { name: 'ผู้ใช้งาน', package: 'Basic' };
+  const [showModal, setShowModal] = useState(false);
+  const [method, setMethod] = useState('mobile');
 
-  // State เก็บข้อมูลการโอน
-  const [paymentData, setPaymentData] = useState({
-    slip: null,
-    date: '',
-    hour: '',
-    minute: ''
-  });
+  // ข้อมูลแพ็กเกจที่รับมาจากหน้าก่อนๆ
+  const planName = state?.name || 'Silver';
+  const price = state?.price || '390';
+  const planId = state?.id || 'silver';
 
-  const handleConfirm = (e) => {
+  const handleOpenModal = (e) => {
     e.preventDefault();
+    setShowModal(true);
+  };
 
-    // ตรวจสอบข้อมูลให้ครบถ้วน
-    if (paymentData.slip && paymentData.date && paymentData.hour && paymentData.minute) {
-      
-      // จัดรูปแบบวันที่แบบไทย (พ.ศ.)
-      const thaiDate = new Date(paymentData.date).toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-
-      const timeString = `${paymentData.hour}:${paymentData.minute}`;
-
-      alert(`แจ้งชำระเงินสำเร็จ!\n----------------------\nวันที่โอน: ${thaiDate}\nเวลาโอน: ${timeString} น.\n----------------------\nระบบจะตรวจสอบสลิปของท่านภายใน 24 ชม. ค่ะ`);
-      
-      navigate('/login');
-    } else {
-      alert("กรุณาแนบรูปสลิป ระบุวันที่ และเลือกเวลาที่โอนให้ครบถ้วนนะคะ");
+  const handleFinish = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      user.status = planId; // อัปเดตสถานะแพ็กเกจ
+      localStorage.setItem('user', JSON.stringify(user));
     }
+    navigate('/dashboard');
+    window.location.reload();
   };
 
   return (
-    <div style={{ textAlign: 'center', padding: '50px', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
-      <div style={{ 
-        maxWidth: '480px', 
-        margin: '0 auto', 
-        padding: '35px', 
-        borderRadius: '25px', 
-        backgroundColor: '#fff',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.08)' 
-      }}>
-        <h2 style={{ color: '#333', marginBottom: '10px' }}>แจ้งชำระเงิน</h2>
-        <p style={{ color: '#666' }}>แพ็กเกจ: <strong style={{ color: '#007bff' }}>{user.package}</strong></p>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'sans-serif', position: 'relative' }}>
+      
+      {/* --- ส่วนหน้าจ่ายเงิน (รูปที่ 1) --- */}
+      <div style={{ width: '100%', maxWidth: '500px', padding: '40px', backgroundColor: 'white', borderRadius: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.05)', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '30px' }}>{planName} Package</h2>
 
-        {/* ข้อมูลธนาคาร */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)', 
-          padding: '20px', 
-          margin: '25px 0', 
-          borderRadius: '20px', 
-          border: '1px solid #90caf9' 
-        }}>
-          <h3 style={{ color: '#1565c0', margin: '0 0 5px 0' }}>ธนาคารกสิกรไทย</h3>
-          <h2 style={{ letterSpacing: '2px', margin: '10px 0', color: '#0d47a1' }}>012-3-45678-9</h2>
-          <p style={{ margin: 0, fontWeight: '600', color: '#1565c0' }}>ชื่อบัญชี: บจก. แบงค็อก คอร์สเซส</p>
+        <div style={{ textAlign: 'left', marginBottom: '25px' }}>
+          <p style={{ fontWeight: 'bold', margin: '0' }}>Payment Method</p>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 15px 0' }}>เลือกวิธีชำระเงิน</p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            <div onClick={() => setMethod('mobile')} style={methodStyle(method === 'mobile')}>
+                <div style={radioStyle(method === 'mobile')}></div>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Mobile Banking</span>
+            </div>
+            <div onClick={() => setMethod('card')} style={methodStyle(method === 'card')}>
+                <div style={radioStyle(method === 'card')}></div>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Credit Debit Card</span>
+            </div>
+            <div onClick={() => setMethod('qr')} style={methodStyle(method === 'qr')}>
+                <div style={radioStyle(method === 'qr')}></div>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>QR Code</span>
+            </div>
+          </div>
         </div>
 
-        <div style={{ textAlign: 'left' }}>
-          {/* อัปโหลดสลิป */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px', color: '#444' }}>แนบรูปภาพสลิป :</label>
-            <input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => setPaymentData({...paymentData, slip: e.target.files[0]})}
-              style={{ width: '100%', cursor: 'pointer' }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '25px' }}>
-            {/* วันที่โอน */}
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px', color: '#444' }}>วันที่โอน :</label>
-              <input 
-                type="date" 
-                lang="th-TH"
-                onChange={(e) => setPaymentData({...paymentData, date: e.target.value})}
-                style={{ 
-                  width: '100%', 
-                  padding: '10px', 
-                  borderRadius: '12px', 
-                  border: '1px solid #ddd',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-
-            {/* เวลาโอน (Dropdown 24 ชม.) */}
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px', color: '#444' }}>เวลาโอน :</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <select 
-                  onChange={(e) => setPaymentData({...paymentData, hour: e.target.value})}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd' }}
-                >
-                  <option value="">ชม.</option>
-                  {[...Array(24)].map((_, i) => (
-                    <option key={i} value={i.toString().padStart(2, '0')}>
-                      {i.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
-                <span>:</span>
-                <select 
-                  onChange={(e) => setPaymentData({...paymentData, minute: e.target.value})}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd' }}
-                >
-                  <option value="">นาที</option>
-                  {[...Array(60)].map((_, i) => (
-                    <option key={i} value={i.toString().padStart(2, '0')}>
-                      {i.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+        <div style={{ textAlign: 'left', marginBottom: '35px' }}>
+          <p style={{ fontWeight: 'bold', margin: '0' }}>Billing Information</p>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 15px 0' }}>ช่องกรอกอีเมลสำหรับการส่ง API Key และใบเสร็จ</p>
+          <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Email Address</label>
+          <input 
+            type="email" 
+            placeholder="example@gmail.com" 
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid #1e293b', boxSizing: 'border-box' }} 
+          />
         </div>
 
         <button 
-          onClick={handleConfirm}
-          style={{ 
-            width: '100%', 
-            padding: '16px', 
-            background: '#28a745', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '30px', 
-            fontSize: '18px', 
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(40, 167, 69, 0.3)',
-            transition: 'all 0.2s ease'
-          }}
+          onClick={handleOpenModal}
+          style={{ width: '100%', padding: '18px', backgroundColor: '#0047AB', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer' }}
         >
-          ยืนยันการแจ้งโอนเงิน
+          ชำระเงิน {price} ฿
         </button>
-
-        <p 
-          onClick={() => navigate('/pricing')} 
-          style={{ marginTop: '20px', color: '#999', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}
-        >
-          ยกเลิกและกลับไปเลือกแพ็กเกจใหม่
-        </p>
       </div>
+
+      {/* --- ส่วนป๊อปอัปสำเร็จ (รูปที่ 2) --- */}
+      {showModal && (
+        <div style={overlayStyle}>
+          <div style={modalCardStyle}>
+             <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>{planName} Package</h2>
+             
+             {/* ไอคอนติ๊กถูกสีเขียว */}
+             <div style={successCircleStyle}>
+                <span style={{ color: 'white', fontSize: '60px' }}>✔</span>
+             </div>
+
+             <h2 style={{ margin: '20px 0 10px 0', fontWeight: 'bold' }}>ชำระเงินเรียบร้อย</h2>
+             <p style={{ color: '#64748b', marginBottom: '30px' }}>
+                ระบบได้รับการอัปเกรดโควต้า API ของคุณเป็น <strong>{planName}</strong> เรียบร้อยแล้ว
+             </p>
+
+             <button 
+                onClick={handleFinish}
+                style={modalBtnStyle}
+             >
+                เริ่มใช้งานเลย
+             </button>
+          </div>
+        </div>
+      )}
     </div>
   );
+};
+
+// --- Styles สำหรับหน้า Payment ---
+const methodStyle = (active) => ({
+  padding: '15px 5px', borderRadius: '12px', border: active ? '2px solid #0047AB' : '1px solid #e2e8f0',
+  textAlign: 'center', cursor: 'pointer', backgroundColor: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'
+});
+
+const radioStyle = (active) => ({
+  width: '14px', height: '14px', borderRadius: '50%', border: '2px solid #0047AB', backgroundColor: active ? '#0047AB' : 'transparent'
+});
+
+const overlayStyle = {
+  position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+  backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+};
+
+const modalCardStyle = {
+  width: '450px', padding: '40px', backgroundColor: 'white', borderRadius: '30px', 
+  boxShadow: '0 20px 40px rgba(0,0,0,0.1)', textAlign: 'center'
+};
+
+const successCircleStyle = {
+  width: '120px', height: '120px', backgroundColor: '#2ecc71', borderRadius: '50%', 
+  display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto'
+};
+
+const modalBtnStyle = {
+  width: '100%', padding: '14px', backgroundColor: '#0047AB', color: 'white', 
+  border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
 };
 
 export default Payment;
